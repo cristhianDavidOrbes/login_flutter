@@ -273,6 +273,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     try {
       final objects = await client.storage.from(_bucket).list(path: userId);
       final files = objects
+          .where((item) => !item.name.startsWith('__history'))
           .map(
             (item) => StoredFile(
               name: item.name,
@@ -324,7 +325,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         setState(() => _conversationHistory = history);
       }
     } on StorageException catch (error) {
-      if (error.statusCode == 404) {
+      if (error.statusCode == '404') {
         // No history stored yet. Ignore.
       } else if (mounted) {
         _showSnack('No se pudo cargar el historial: ${error.message}');
@@ -501,11 +502,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
       final previous = _recentHistory(3);
       if (previous.isNotEmpty) {
-        prompt.writeln('Contexto de resúmenes previos:');
+        prompt.writeln('Contexto de resumenes previos:');
         for (final entry in previous) {
-          prompt
-            ..writeln(
-                '- ${entry.timestamp.toIso8601String()}: ${_trimForPrompt(entry.summary)}');
+          final stamp = entry.timestamp.toIso8601String();
+          final summarySnippet = _trimForPrompt(entry.summary);
+          prompt.writeln('- $stamp: $summarySnippet');
         }
       }
 
@@ -1004,7 +1005,7 @@ class _DocumentsSection extends StatelessWidget {
               )
             else if (files.isEmpty)
               const Text(
-                'Aún no hay documentos. Sube tus PDFs, TXT, hojas de cálculo u otros archivos relevantes.',
+                'Aun no hay documentos. Sube tus PDFs, TXT, hojas de calculo u otros archivos relevantes.',
               )
             else
               ListView.separated(
@@ -1202,6 +1203,15 @@ class ConversationEntry {
   String get previewSummary =>
       summary.length <= 160 ? summary : '${summary.substring(0, 160)}...';
 }
+
+
+
+
+
+
+
+
+
 
 
 
